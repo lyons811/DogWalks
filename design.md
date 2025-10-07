@@ -274,22 +274,30 @@ export default defineSchema({
 
 ---
 
-### Phase 2: Dashboard & Basic Routing
+### Phase 2: Dashboard & Basic Routing ✅ COMPLETED
 **Goal:** Create dashboard page with route listing
 
 **Tasks:**
-- Implement Convex schema for routes
-- Create `listRoutes` query in Convex
-- Build `RouteList` component for dashboard
-- Build `RouteCard` component
-- Handle empty state ("No routes yet")
-- Add "Create Route" navigation button
-- Style with shadcn/ui cards and layout
+- ✅ Implement Convex schema for routes
+- ✅ Create `listRoutes` query in Convex
+- ✅ Build `RouteList` component for dashboard
+- ✅ Build `RouteCard` component
+- ✅ Handle empty state ("No routes yet")
+- ✅ Add "Create Route" navigation button
+- ✅ Style with shadcn/ui cards and layout
 
 **Deliverables:**
-- Functional dashboard showing routes (or empty state)
-- Navigation to create page works
-- Routes fetched from Convex in real-time
+- ✅ Functional dashboard showing routes (or empty state)
+- ✅ Navigation to create page works
+- ✅ Routes fetched from Convex in real-time
+
+**Completion Notes:**
+- Added `convex/schema.ts` with routes table definition and indexed createdAt field
+- Implemented `listRoutes` query and `seedExampleRoutes` mutation in `convex/routes.ts`
+- Wrapped app with `ConvexProvider` (`app/root.tsx`) and created shared client (`app/lib/convex.ts`)
+- Dashboard loader now seeds demo routes when empty and hydrates via `useQuery` (`app/routes/_index.tsx`)
+- Built reusable `RouteCard` and `RouteList` components with formatted metrics (`app/components`)
+- Added shared TypeScript types for route summaries (`app/types/routes.ts`)
 
 ---
 
