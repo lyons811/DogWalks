@@ -18,3 +18,5 @@ export type RouteListItem = {
   updatedAt: number;
   points: RoutePoint[];
 };
+
+export type RouteDetail = RouteListItem;

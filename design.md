@@ -330,26 +330,32 @@ export default defineSchema({
 
 ---
 
-### Phase 4: Save & View Routes
+### Phase 4: Save & View Routes ✅ COMPLETED
 **Goal:** Persist routes to Convex and view them
 
 **Tasks:**
-- Create `RouteForm` component (name, notes inputs)
-- Implement distance calculation (Haversine formula)
-- Implement time estimation (configurable speed)
-- Create `RouteMetrics` component
-- Implement `createRoute` mutation in Convex
-- Connect create page to save route
-- Build route detail page (`route.$id.tsx`)
-- Implement `getRoute` query in Convex
-- Display route on detail page with read-only map
-- Show route metrics on detail page
+- ✅ Create `RouteForm` component (name, notes inputs)
+- ✅ Implement distance calculation (Haversine formula)
+- ✅ Implement time estimation (default 3 mph walking speed; configurable control deferred to Phase 6)
+- ✅ Create `RouteMetrics` component
+- ✅ Implement `createRoute` mutation in Convex
+- ✅ Connect create page to save route
+- ✅ Build route detail page (`route.$id.tsx`)
+- ✅ Implement `getRoute` query in Convex
+- ✅ Display route on detail page with read-only map
+- ✅ Show route metrics on detail page
 
 **Deliverables:**
-- Can create and save routes
-- Routes appear on dashboard after creation
-- Can view individual route details
-- Distance and time calculated correctly
+- ✅ Can create and save routes
+- ✅ Routes appear on dashboard after creation
+- ✅ Can view individual route details
+- ✅ Distance and time calculated correctly
+
+**Completion Notes:**
+- Added reusable `RouteForm` and `RouteMetrics` components with shared formatting utilities for consistent UI.
+- Implemented Haversine-based distance and time calculations in `app/lib` and wired into create/detail pages.
+- Created Convex `createRoute` mutation and `getRoute` query with loader/live query hookups for dashboard and detail flows.
+- Save action now persists drawn routes, redirects to the detail page, and renders a read-only Leaflet map with numbered markers.
 
 ---
 

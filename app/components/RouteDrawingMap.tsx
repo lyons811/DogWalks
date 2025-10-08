@@ -1,9 +1,8 @@
 import { Fragment, useCallback, useMemo } from "react";
 import type { LatLngBoundsExpression, LatLngExpression, LeafletEventHandlerFnMap } from "leaflet";
 import type { RoutePoint } from "~/types/routes";
+import { createRoutePointIcon } from "~/lib/leaflet-icons";
 import { RouteMap, type RouteMapRenderProps } from "./RouteMap";
-
-type LeafletLib = typeof import("leaflet");
 
 type RouteDrawingMapProps = {
   points: RoutePoint[];
@@ -102,10 +101,9 @@ function RouteDrawingOverlays({
     },
   });
 
-  const markerIcons = useMemo(
-    () => points.map((_, index) => createPointIcon(leaflet, index, points.length)),
-    [leaflet, points],
-  );
+  const markerIcons = useMemo(() => {
+    return points.map((_, index) => createRoutePointIcon(leaflet, index, points.length));
+  }, [leaflet, points]);
 
   const polylinePositions: LatLngExpression[] = useMemo(
     () => points.map((point) => [point.lat, point.lng] satisfies LatLngExpression),
@@ -181,20 +179,6 @@ function RouteDrawingOverlays({
       </Pane>
     </Fragment>
   );
-}
-
-function createPointIcon(leaflet: LeafletLib, index: number, total: number) {
-  const isStart = index === 0;
-  const isEnd = index === total - 1 && total > 1;
-  const variant = isStart ? "start" : isEnd ? "end" : "mid";
-  const label = index + 1;
-
-  return leaflet.divIcon({
-    className: `route-point-icon route-point-icon--${variant}`,
-    html: `<span class="route-point-icon__badge">${label}</span><span class="route-point-icon__pulse"></span>`,
-    iconSize: [28, 28],
-    iconAnchor: [14, 14],
-  });
 }
 
 export default RouteDrawingMap;

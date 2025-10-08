@@ -1,15 +1,11 @@
 import { Link } from "react-router";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import type { RouteListItem } from "~/types/routes";
+import { formatDistanceMeters, formatDurationMinutes, formatElevationMeters } from "~/lib/format";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 
 type RouteCardProps = {
   route: RouteListItem;
 };
-
-const distanceFormatter = new Intl.NumberFormat("en-US", {
-  maximumFractionDigits: 2,
-  minimumFractionDigits: 2,
-});
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
   month: "short",
@@ -17,48 +13,11 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
   year: "numeric",
 });
 
-function formatDistance(distanceMeters: number) {
-  if (!Number.isFinite(distanceMeters) || distanceMeters <= 0) {
-    return "0.00 mi";
-  }
-  const miles = distanceMeters / 1609.344;
-  const formatted = miles >= 10 ? miles.toFixed(1) : miles.toFixed(2);
-  return `${formatted} mi`;
-}
-
-function formatDuration(minutes: number) {
-  if (!Number.isFinite(minutes) || minutes <= 0) {
-    return "0 min";
-  }
-
-  const totalMinutes = Math.round(minutes);
-  const hours = Math.floor(totalMinutes / 60);
-  const remainingMinutes = totalMinutes % 60;
-
-  if (hours === 0) {
-    return `${totalMinutes} min`;
-  }
-
-  if (remainingMinutes === 0) {
-    return `${hours} hr${hours > 1 ? "s" : ""}`;
-  }
-
-  return `${hours} hr ${remainingMinutes} min`;
-}
-
-function formatElevation(elevationMeters?: number | null) {
-  if (!Number.isFinite(elevationMeters ?? NaN) || (elevationMeters ?? 0) <= 0) {
-    return "0 ft";
-  }
-  const feet = (elevationMeters ?? 0) * 3.28084;
-  return `${distanceFormatter.format(feet)} ft`;
-}
-
 export function RouteCard({ route }: RouteCardProps) {
   const createdDate = dateFormatter.format(new Date(route.createdAt));
-  const distance = formatDistance(route.distance);
-  const duration = formatDuration(route.estimatedTime);
-  const elevationGain = formatElevation(route.elevationGain);
+  const distance = formatDistanceMeters(route.distance);
+  const duration = formatDurationMinutes(route.estimatedTime);
+  const elevationGain = formatElevationMeters(route.elevationGain);
 
   return (
     <Link

@@ -1,13 +1,19 @@
 import { useCallback, useMemo, useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import type { Route } from "./+types/create";
-import { RouteDrawingMap } from "~/components/RouteDrawingMap";
+import { useMutation } from "convex/react";
+import { api } from "../../convex/_generated/api";
 import type { RoutePoint } from "~/types/routes";
+import { RouteDrawingMap } from "~/components/RouteDrawingMap";
+import {
+  RouteForm,
+  type RouteFormErrors,
+  type RouteFormValues,
+} from "~/components/RouteForm";
+import { RouteMetrics } from "~/components/RouteMetrics";
+import { calculateRouteMetrics } from "~/lib/route-calculations";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
-import { Textarea } from "~/components/ui/textarea";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -18,9 +24,33 @@ export function meta({}: Route.MetaArgs) {
 
 export default function CreateRoute() {
   const [points, setPoints] = useState<RoutePoint[]>([]);
+  const [formValues, setFormValues] = useState<RouteFormValues>({ name: "", notes: "" });
+  const [formErrors, setFormErrors] = useState<RouteFormErrors>({});
+  const [error, setError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const createRouteMutation = useMutation(api.routes.createRoute);
+  const navigate = useNavigate();
+
+  const metrics = useMemo(() => calculateRouteMetrics(points), [points]);
+  const pointCount = points.length;
+  const hasRoute = pointCount > 0;
+  const canSave = pointCount >= 2 && formValues.name.trim().length > 0 && !isSaving;
+
+  const handleFormChange = useCallback(
+    (values: RouteFormValues) => {
+      setFormValues(values);
+      setError(null);
+      if (formErrors.name) {
+        setFormErrors((previous) => ({ ...previous, name: undefined }));
+      }
+    },
+    [formErrors.name],
+  );
 
   const handleAddPoint = useCallback((point: RoutePoint) => {
     setPoints((prev) => [...prev, normalizePoint(point)]);
+    setError(null);
   }, []);
 
   const handleUpdatePoint = useCallback((index: number, updated: RoutePoint) => {
@@ -29,58 +59,78 @@ export default function CreateRoute() {
         pointIndex === index ? { ...point, ...normalizePoint(updated) } : point,
       ),
     );
+    setError(null);
   }, []);
 
   const handleRemovePoint = useCallback((index: number) => {
     setPoints((prev) => prev.filter((_, pointIndex) => pointIndex !== index));
+    setError(null);
   }, []);
 
   const handleClearPoints = useCallback(() => {
     setPoints([]);
+    setError(null);
   }, []);
 
-  const { distanceMiles, estimatedMinutes, elevationGainFeet } = useMemo(() => {
-    const pointCount = points.length;
+  const handleSaveRoute = useCallback(async () => {
+    const trimmedName = formValues.name.trim();
+
+    if (trimmedName.length === 0) {
+      setFormErrors({ name: "Please enter a route name." });
+      setError("Add a route name and at least two points before saving.");
+      return;
+    }
+
     if (pointCount < 2) {
-      return { distanceMiles: 0, estimatedMinutes: 0, elevationGainFeet: 0 };
+      setError("Add at least two points before saving.");
+      return;
     }
 
-    const segmentCount = pointCount - 1;
-    const miles = segmentCount * 0.2;
-    const minutes = Math.round(miles * 20);
-    const elevation = segmentCount * 35;
+    const trimmedNotes = formValues.notes.trim();
 
-    return {
-      distanceMiles: Number(miles.toFixed(2)),
-      estimatedMinutes: minutes,
-      elevationGainFeet: elevation,
-    };
-  }, [points]);
+    setFormErrors({});
+    setError(null);
+    setIsSaving(true);
 
-  const distanceDisplay = useMemo(() => {
-    if (!Number.isFinite(distanceMiles) || distanceMiles <= 0) {
-      return "0.00 mi";
+    try {
+      const serializedPoints = points.map((point) => {
+        const { elevation, ...rest } = point;
+        return elevation == null ? rest : { ...rest, elevation };
+      });
+
+      const newRouteId = await createRouteMutation({
+        name: trimmedName,
+        notes: trimmedNotes.length > 0 ? trimmedNotes : undefined,
+        points: serializedPoints,
+        distance: metrics.distanceMeters,
+        estimatedTime: metrics.estimatedMinutes,
+        elevationGain: metrics.elevationGainMeters ?? undefined,
+        elevationLoss: metrics.elevationLossMeters ?? undefined,
+      });
+
+      navigate(`/route/${newRouteId}`);
+    } catch (saveError) {
+      console.error("Failed to save route", saveError);
+      setError(
+        saveError instanceof Error
+          ? saveError.message
+          : "Unable to save route. Please try again.",
+      );
+    } finally {
+      setIsSaving(false);
     }
-
-    const precision = distanceMiles >= 10 ? 1 : 2;
-    return `${distanceMiles.toFixed(precision)} mi`;
-  }, [distanceMiles]);
-
-  const timeDisplay = useMemo(() => {
-    if (!Number.isFinite(estimatedMinutes) || estimatedMinutes <= 0) {
-      return "0 min";
-    }
-    return `${estimatedMinutes} min`;
-  }, [estimatedMinutes]);
-
-  const elevationDisplay = useMemo(() => {
-    if (!Number.isFinite(elevationGainFeet) || elevationGainFeet <= 0) {
-      return "0 ft";
-    }
-    return `${elevationGainFeet} ft`;
-  }, [elevationGainFeet]);
-
-  const hasRoute = points.length > 0;
+  }, [
+    createRouteMutation,
+    formValues.name,
+    formValues.notes,
+    metrics.distanceMeters,
+    metrics.elevationGainMeters,
+    metrics.elevationLossMeters,
+    metrics.estimatedMinutes,
+    navigate,
+    pointCount,
+    points,
+  ]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -105,7 +155,7 @@ export default function CreateRoute() {
                   variant="outline"
                   size="sm"
                   onClick={handleClearPoints}
-                  disabled={!hasRoute}
+                  disabled={!hasRoute || isSaving}
                 >
                   Clear Points
                 </Button>
@@ -131,51 +181,37 @@ export default function CreateRoute() {
                 <CardDescription>Add information about this route</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Route Name</Label>
-                  <Input id="name" placeholder="e.g., Morning Beach Walk" />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="notes">Notes (optional)</Label>
-                  <Textarea id="notes" placeholder="Add notes about this route..." rows={4} />
-                </div>
+                <RouteForm
+                  values={formValues}
+                  onChange={handleFormChange}
+                  errors={formErrors}
+                  disabled={isSaving}
+                />
 
                 <div className="border-t pt-4">
                   <h3 className="mb-3 text-sm font-semibold">Route Metrics</h3>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Distance:</span>
-                      <span className="font-medium">{distanceDisplay}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Est. Time:</span>
-                      <span className="font-medium">{timeDisplay}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Elevation Gain:</span>
-                      <span className="font-medium">{elevationDisplay}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Route Points:</span>
-                      <span className="font-medium">{points.length}</span>
-                    </div>
-                  </div>
+                  <RouteMetrics
+                    metrics={metrics}
+                    pointCount={pointCount}
+                    showPointCount
+                  />
                   <p className="mt-3 text-xs text-muted-foreground">
-                    Metrics update as you draw. These values are placeholders until Phase 4 adds real
-                    calculations.
+                    Metrics update automatically as you draw.
                   </p>
                 </div>
 
-                <div className="space-y-2 pt-4">
-                  <Button className="w-full" disabled>
-                    Save Route
+                {error ? <p className="text-sm text-destructive">{error}</p> : null}
+
+                <div className="space-y-2 pt-2">
+                  <Button
+                    className="w-full"
+                    onClick={handleSaveRoute}
+                    disabled={!canSave}
+                  >
+                    {isSaving ? "Saving..." : "Save Route"}
                   </Button>
-                  <p className="text-center text-xs text-muted-foreground">
-                    Route saving arrives in Phase 4.
-                  </p>
                   <Link to="/" className="block">
-                    <Button variant="outline" className="w-full">
+                    <Button variant="outline" className="w-full" disabled={isSaving}>
                       Cancel
                     </Button>
                   </Link>

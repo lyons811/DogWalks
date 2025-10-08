@@ -1,3 +1,4 @@
+import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import type { Doc } from "./_generated/dataModel";
 
@@ -20,6 +21,71 @@ export const listRoutes = query({
         updatedAt: route.updatedAt,
         points: route.points,
       }));
+  },
+});
+
+const routePointValidator = v.object({
+  lat: v.float64(),
+  lng: v.float64(),
+  elevation: v.optional(v.float64()),
+});
+
+export const createRoute = mutation({
+  args: {
+    name: v.string(),
+    notes: v.optional(v.string()),
+    points: v.array(routePointValidator),
+    distance: v.float64(),
+    estimatedTime: v.float64(),
+    elevationGain: v.optional(v.float64()),
+    elevationLoss: v.optional(v.float64()),
+  },
+  handler: async (ctx, args) => {
+    if (args.points.length < 2) {
+      throw new Error("Route must contain at least two points");
+    }
+
+    const timestamp = Date.now();
+
+    const id = await ctx.db.insert("routes", {
+      name: args.name,
+      notes: args.notes,
+      points: args.points,
+      distance: args.distance,
+      estimatedTime: args.estimatedTime,
+      elevationGain: args.elevationGain,
+      elevationLoss: args.elevationLoss,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    });
+
+    return id;
+  },
+});
+
+export const getRoute = query({
+  args: {
+    id: v.id("routes"),
+  },
+  handler: async (ctx, args) => {
+    const route = await ctx.db.get(args.id);
+
+    if (!route) {
+      return null;
+    }
+
+    return {
+      id: route._id,
+      name: route.name,
+      notes: route.notes,
+      points: route.points,
+      distance: route.distance,
+      estimatedTime: route.estimatedTime,
+      elevationGain: route.elevationGain,
+      elevationLoss: route.elevationLoss,
+      createdAt: route.createdAt,
+      updatedAt: route.updatedAt,
+    };
   },
 });
 
