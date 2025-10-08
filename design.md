@@ -359,26 +359,33 @@ export default defineSchema({
 
 ---
 
-### Phase 5: Elevation Integration
+### Phase 5: Elevation Integration ? COMPLETED
 **Goal:** Add elevation data and elevation profiles
 
 **Tasks:**
-- Download USGS Oahu DEM data
-- Process DEM into usable format (GeoTIFF with geotiff.js recommended)
-- Place elevation data in public folder
-- Create elevation lookup utility
-- Integrate elevation lookup when adding route points
-- Calculate elevation gain and loss
-- Build `ElevationChart` component (simple line chart)
-- Add elevation metrics to `RouteMetrics`
-- Update Convex schema to store elevation data with points
-- Display elevation chart on route detail page
+- [x] Download USGS Oahu DEM data
+- [x] Process DEM into usable format (GeoTIFF with geotiff.js recommended)
+- [x] Place elevation data in public folder
+- [x] Create elevation lookup utility
+- [x] Integrate elevation lookup when adding route points
+- [x] Calculate elevation gain and loss
+- [x] Build `ElevationChart` component (simple line chart)
+- [x] Add elevation metrics to `RouteMetrics`
+- [x] Update Convex schema to store elevation data with points
+- [x] Display elevation chart on route detail page
 
 **Deliverables:**
-- Elevation data available in app
-- Routes capture elevation at each point
-- Elevation gain/loss calculated
-- Visual elevation profile chart displays
+- [x] Elevation data available in app
+- [x] Routes capture elevation at each point
+- [x] Elevation gain/loss calculated
+- [x] Visual elevation profile chart displays
+
+**Completion Notes:**
+- Added `app/lib/elevation.ts` to lazily load the USGS DEM via `geotiff`, cache samples, and expose preload/lookup helpers.
+- Updated the create route flow to enrich drawn points with elevations, enforce full sampling before save, and persist gain/loss metrics.
+- Expanded `route-calculations` with elevation aggregation/profile utilities and surfaced metrics through `RouteMetrics`.
+- Introduced `ElevationChart` using Recharts and embedded it on the route detail page with dark-mode styling and graceful fallbacks.
+- Ensured the Oahu DEM lives in `public/` so the client fetch succeeds in dev/prod builds.
 
 ---
 

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import type { Route } from "./+types/create";
 import { useMutation } from "convex/react";
@@ -12,8 +12,11 @@ import {
 } from "~/components/RouteForm";
 import { RouteMetrics } from "~/components/RouteMetrics";
 import { calculateRouteMetrics } from "~/lib/route-calculations";
+import { getElevationMeters, preloadElevationModel } from "~/lib/elevation";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
+
+const COORDINATE_EPSILON = 1e-6;
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -28,9 +31,22 @@ export default function CreateRoute() {
   const [formErrors, setFormErrors] = useState<RouteFormErrors>({});
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const isMountedRef = useRef(true);
 
   const createRouteMutation = useMutation(api.routes.createRoute);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      void preloadElevationModel().catch((preloadError) => {
+        console.error("Failed to preload elevation data", preloadError);
+      });
+    }
+
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   const metrics = useMemo(() => calculateRouteMetrics(points), [points]);
   const pointCount = points.length;
@@ -48,19 +64,68 @@ export default function CreateRoute() {
     [formErrors.name],
   );
 
-  const handleAddPoint = useCallback((point: RoutePoint) => {
-    setPoints((prev) => [...prev, normalizePoint(point)]);
-    setError(null);
+  const loadElevationForPoint = useCallback((index: number, lat: number, lng: number) => {
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+      return;
+    }
+
+    void (async () => {
+      try {
+        const elevation = await getElevationMeters(lat, lng);
+
+        if (!isMountedRef.current) {
+          return;
+        }
+
+        setPoints((prev) => {
+          const target = prev[index];
+
+          if (!target) {
+            return prev;
+          }
+
+          if (
+            Math.abs(target.lat - lat) > COORDINATE_EPSILON ||
+            Math.abs(target.lng - lng) > COORDINATE_EPSILON
+          ) {
+            return prev;
+          }
+
+          if ((target.elevation ?? null) === (elevation ?? null)) {
+            return prev;
+          }
+
+          const next = [...prev];
+          next[index] = { ...target, elevation: elevation ?? null };
+          return next;
+        });
+      } catch (lookupError) {
+        console.error("Unable to determine elevation for point", lookupError);
+      }
+    })();
   }, []);
 
+  const handleAddPoint = useCallback((point: RoutePoint) => {
+    const normalized = normalizePoint({ ...point, elevation: null });
+    setPoints((prev) => {
+      const next = [...prev, normalized];
+      const index = next.length - 1;
+      loadElevationForPoint(index, normalized.lat, normalized.lng);
+      return next;
+    });
+    setError(null);
+  }, [loadElevationForPoint]);
+
   const handleUpdatePoint = useCallback((index: number, updated: RoutePoint) => {
+    const normalized = normalizePoint({ ...updated, elevation: null });
     setPoints((prev) =>
       prev.map((point, pointIndex) =>
-        pointIndex === index ? { ...point, ...normalizePoint(updated) } : point,
+        pointIndex === index ? { ...point, ...normalized } : point,
       ),
     );
+    loadElevationForPoint(index, normalized.lat, normalized.lng);
     setError(null);
-  }, []);
+  }, [loadElevationForPoint]);
 
   const handleRemovePoint = useCallback((index: number) => {
     setPoints((prev) => prev.filter((_, pointIndex) => pointIndex !== index));
@@ -93,7 +158,12 @@ export default function CreateRoute() {
     setIsSaving(true);
 
     try {
-      const serializedPoints = points.map((point) => {
+      const pointsWithElevation = await ensurePointElevations(points);
+      setPoints(pointsWithElevation);
+
+      const metricsForSave = calculateRouteMetrics(pointsWithElevation);
+
+      const serializedPoints = pointsWithElevation.map((point) => {
         const { elevation, ...rest } = point;
         return elevation == null ? rest : { ...rest, elevation };
       });
@@ -102,10 +172,10 @@ export default function CreateRoute() {
         name: trimmedName,
         notes: trimmedNotes.length > 0 ? trimmedNotes : undefined,
         points: serializedPoints,
-        distance: metrics.distanceMeters,
-        estimatedTime: metrics.estimatedMinutes,
-        elevationGain: metrics.elevationGainMeters ?? undefined,
-        elevationLoss: metrics.elevationLossMeters ?? undefined,
+        distance: metricsForSave.distanceMeters,
+        estimatedTime: metricsForSave.estimatedMinutes,
+        elevationGain: metricsForSave.elevationGainMeters ?? undefined,
+        elevationLoss: metricsForSave.elevationLossMeters ?? undefined,
       });
 
       navigate(`/route/${newRouteId}`);
@@ -231,4 +301,26 @@ function normalizePoint(point: RoutePoint): RoutePoint {
     lat: Number(point.lat.toFixed(6)),
     lng: Number(point.lng.toFixed(6)),
   };
+}
+
+async function ensurePointElevations(points: RoutePoint[]): Promise<RoutePoint[]> {
+  if (points.length === 0 || typeof window === "undefined") {
+    return points;
+  }
+
+  const tasks = points.map(async (point) => {
+    if (point.elevation != null) {
+      return point;
+    }
+
+    try {
+      const elevation = await getElevationMeters(point.lat, point.lng);
+      return { ...point, elevation: elevation ?? null };
+    } catch (error) {
+      console.error("Elevation lookup failed while saving route", error);
+      return point;
+    }
+  });
+
+  return Promise.all(tasks);
 }

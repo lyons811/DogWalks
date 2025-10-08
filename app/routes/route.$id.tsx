@@ -8,8 +8,10 @@ import { api } from "../../convex/_generated/api";
 import type { RouteDetail, RoutePoint } from "~/types/routes";
 import { RouteForm, type RouteFormValues } from "~/components/RouteForm";
 import { RouteMetrics } from "~/components/RouteMetrics";
+import { ElevationChart } from "~/components/ElevationChart";
 import { RouteMap, type RouteMapRenderProps } from "~/components/RouteMap";
 import { createRoutePointIcon } from "~/lib/leaflet-icons";
+import { buildElevationProfile } from "~/lib/route-calculations";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import type { LatLngBoundsExpression, LatLngExpression } from "leaflet";
@@ -101,6 +103,11 @@ export default function RouteDetailPage() {
     [route.points],
   );
 
+  const elevationProfile = useMemo(
+    () => buildElevationProfile(route.points),
+    [route.points],
+  );
+
   const metrics = useMemo(
     () => ({
       distanceMeters: route.distance,
@@ -178,12 +185,10 @@ export default function RouteDetailPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Elevation Profile</CardTitle>
-                <CardDescription>Elevation insights arrive in Phase 5</CardDescription>
+                <CardDescription>Grade changes along the route</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex h-[200px] items-center justify-center rounded-md border border-dashed border-border/70 bg-muted/20 text-sm text-muted-foreground">
-                  Elevation charts will display here in the next phase.
-                </div>
+                <ElevationChart profile={elevationProfile} />
               </CardContent>
             </Card>
           </div>
