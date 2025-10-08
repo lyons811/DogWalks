@@ -1,0 +1,123 @@
+{
+  "buildManifest": {
+    "serverBundles": {
+      "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0": {
+        "id": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+        "file": "build/server/nodejs_eyJydW50aW1lIjoibm9kZWpzIn0/index.js",
+        "config": {
+          "runtime": "nodejs"
+        }
+      }
+    },
+    "routeIdToServerBundleId": {
+      "routes/_index": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/create": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/route.$id": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0"
+    },
+    "routes": {
+      "root": {
+        "id": "root",
+        "file": "app/root.tsx",
+        "path": "",
+        "config": {}
+      },
+      "routes/_index": {
+        "id": "routes/_index",
+        "parentId": "root",
+        "file": "app/routes/_index.tsx",
+        "index": true,
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/create": {
+        "id": "routes/create",
+        "parentId": "root",
+        "file": "app/routes/create.tsx",
+        "path": "create",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/route.$id": {
+        "id": "routes/route.$id",
+        "parentId": "root",
+        "file": "app/routes/route.$id.tsx",
+        "path": "route/:id",
+        "config": {
+          "runtime": "nodejs"
+        }
+      }
+    }
+  },
+  "reactRouterConfig": {
+    "appDirectory": "C:/VSCode/personal/DogWalks/app",
+    "basename": "/",
+    "buildDirectory": "C:/VSCode/personal/DogWalks/build",
+    "future": {
+      "v8_middleware": false,
+      "unstable_optimizeDeps": false,
+      "unstable_splitRouteModules": false,
+      "unstable_subResourceIntegrity": false,
+      "unstable_viteEnvironmentApi": false
+    },
+    "routes": {
+      "root": {
+        "id": "root",
+        "file": "root.tsx",
+        "path": ""
+      },
+      "routes/_index": {
+        "id": "routes/_index",
+        "parentId": "root",
+        "file": "routes/_index.tsx",
+        "index": true
+      },
+      "routes/create": {
+        "id": "routes/create",
+        "parentId": "root",
+        "file": "routes/create.tsx",
+        "path": "create"
+      },
+      "routes/route.$id": {
+        "id": "routes/route.$id",
+        "parentId": "root",
+        "file": "routes/route.$id.tsx",
+        "path": "route/:id"
+      }
+    },
+    "routeDiscovery": {
+      "mode": "lazy",
+      "manifestPath": "/__manifest"
+    },
+    "serverBuildFile": "index.js",
+    "serverModuleFormat": "esm",
+    "ssr": true,
+    "unstable_routeConfig": [
+      {
+        "id": "root",
+        "path": "",
+        "file": "root.tsx",
+        "children": [
+          {
+            "file": "routes/_index.tsx",
+            "index": true
+          },
+          {
+            "file": "routes/create.tsx",
+            "path": "create"
+          },
+          {
+            "file": "routes/route.$id.tsx",
+            "path": "route/:id"
+          }
+        ]
+      }
+    ]
+  },
+  "viteConfig": {
+    "build": {
+      "assetsDir": "assets"
+    }
+  }
+}
