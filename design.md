@@ -301,25 +301,32 @@ export default defineSchema({
 
 ---
 
-### Phase 3: Map Integration & Route Drawing
+### Phase 3: Map Integration & Route Drawing ✅ COMPLETED
 **Goal:** Interactive map with route drawing capability
 
 **Tasks:**
-- Install and configure react-leaflet
-- Create basic `RouteMap` component with OpenStreetMap tiles
-- Build `RouteDrawingMap` with click-to-add-points functionality
-- Implement point editing (drag, delete)
-- Add visual styling for route polyline
-- Add start/end markers
-- Create "Create Route" page with map
-- Implement route point state management
+- ✅ Install and configure react-leaflet
+- ✅ Create basic `RouteMap` component with OpenStreetMap tiles
+- ✅ Build `RouteDrawingMap` with click-to-add-points functionality
+- ✅ Implement point editing (drag, delete)
+- ✅ Add visual styling for route polyline
+- ✅ Add start/end markers
+- ✅ Create "Create Route" page with map
+- ✅ Implement route point state management
 
 **Deliverables:**
-- Working map on create page
-- Can draw routes by clicking
-- Can edit points by dragging
-- Route path displays correctly
-- Points stored in local state
+- ✅ Working map on create page
+- ✅ Can draw routes by clicking
+- ✅ Can edit points by dragging
+- ✅ Route path displays correctly
+- ✅ Points stored in local state
+
+**Completion Notes:**
+- Added `RouteMap` with dynamic Leaflet loading, dark theme styling, and tile configuration.
+- Built `RouteDrawingMap` to support add/drag/remove points with numbered start/end markers and instructional overlay.
+- Integrated the drawing experience into `app/routes/create.tsx` with local state, clear/reset action, and live placeholder metrics.
+- Extended `app/app.css` for Leaflet dark mode controls and custom marker visuals.
+- Updated lint/typecheck compliance, replacing imperative map fitting with declarative bounds props.
 
 ---
 

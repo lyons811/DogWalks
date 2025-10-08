@@ -124,6 +124,107 @@ body {
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+.leaflet-dark {
+  background: transparent;
+  font-family: var(--font-sans);
+}
+
+.leaflet-dark .leaflet-tile {
+  filter: saturate(0.65) brightness(0.8) contrast(1.1);
+}
+
+.leaflet-dark .leaflet-control {
+  background-color: oklch(0.205 0 0 / 0.92);
+  color: var(--color-foreground);
+  border: 1px solid oklch(1 0 0 / 0.08);
+  backdrop-filter: blur(6px);
+}
+
+.leaflet-dark .leaflet-control a {
+  color: inherit;
+}
+
+.leaflet-dark .leaflet-bar a {
+  background-color: transparent;
+  border-bottom-color: oklch(1 0 0 / 0.08);
+}
+
+.leaflet-dark .leaflet-bar a:hover {
+  background-color: oklch(1 0 0 / 0.08);
+}
+
+.leaflet-dark .leaflet-popup-content-wrapper,
+.leaflet-dark .leaflet-popup-tip {
+  background-color: oklch(0.205 0 0 / 0.95);
+  color: var(--color-foreground);
+  border: 1px solid oklch(1 0 0 / 0.08);
+}
+
+.leaflet-dark .leaflet-tooltip {
+  background-color: oklch(0.205 0 0 / 0.9);
+  border-color: oklch(1 0 0 / 0.08);
+  color: var(--color-foreground);
+}
+
+.route-point-icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 9999px;
+  backdrop-filter: blur(4px);
+  border: 1px solid oklch(1 0 0 / 0.08);
+  box-shadow: 0 12px 24px oklch(0 0 0 / 0.45);
+}
+
+.route-point-icon__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: oklch(0.985 0 0);
+  text-shadow: 0 1px 2px oklch(0 0 0 / 0.5);
+}
+
+.route-point-icon__pulse {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  opacity: 0.35;
+  transform: scale(1.25);
+  border: 2px solid currentColor;
+}
+
+.route-point-icon--start {
+  color: #34d399;
+}
+
+.route-point-icon--start .route-point-icon__badge {
+  background-color: #34d399;
+}
+
+.route-point-icon--end {
+  color: #f87171;
+}
+
+.route-point-icon--end .route-point-icon__badge {
+  background-color: #f87171;
+}
+
+.route-point-icon--mid {
+  color: #60a5fa;
+}
+
+.route-point-icon--mid .route-point-icon__badge {
+  background-color: #60a5fa;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
