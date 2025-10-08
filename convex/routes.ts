@@ -125,6 +125,82 @@ const exampleRoutes: Omit<Doc<"routes">, "_id" | "_creationTime">[] = [
   },
 ];
 
+export const updateRoute = mutation({
+  args: {
+    id: v.id("routes"),
+    name: v.optional(v.string()),
+    notes: v.optional(v.string()),
+    points: v.optional(v.array(routePointValidator)),
+    distance: v.optional(v.float64()),
+    estimatedTime: v.optional(v.float64()),
+    elevationGain: v.optional(v.float64()),
+    elevationLoss: v.optional(v.float64()),
+  },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db.get(args.id);
+
+    if (!existing) {
+      throw new Error("Route not found");
+    }
+
+    const updates: Partial<Doc<"routes">> = {
+      updatedAt: Date.now(),
+    };
+
+    if (args.name !== undefined) {
+      updates.name = args.name;
+    }
+
+    if (args.notes !== undefined) {
+      updates.notes = args.notes || undefined;
+    }
+
+    if (args.points !== undefined) {
+      if (args.points.length < 2) {
+        throw new Error("Route must contain at least two points");
+      }
+      updates.points = args.points;
+    }
+
+    if (args.distance !== undefined) {
+      updates.distance = args.distance;
+    }
+
+    if (args.estimatedTime !== undefined) {
+      updates.estimatedTime = args.estimatedTime;
+    }
+
+    if (args.elevationGain !== undefined) {
+      updates.elevationGain = args.elevationGain;
+    }
+
+    if (args.elevationLoss !== undefined) {
+      updates.elevationLoss = args.elevationLoss;
+    }
+
+    await ctx.db.patch(args.id, updates);
+
+    return args.id;
+  },
+});
+
+export const deleteRoute = mutation({
+  args: {
+    id: v.id("routes"),
+  },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db.get(args.id);
+
+    if (!existing) {
+      throw new Error("Route not found");
+    }
+
+    await ctx.db.delete(args.id);
+
+    return { success: true };
+  },
+});
+
 export const seedExampleRoutes = mutation({
   args: {},
   handler: async (ctx) => {

@@ -6,6 +6,8 @@ type RouteMetricsProps = {
   metrics: RouteMetricsData;
   pointCount?: number;
   showPointCount?: boolean;
+  walkingSpeedMph?: number;
+  showWalkingSpeed?: boolean;
   className?: string;
 };
 
@@ -13,6 +15,8 @@ export function RouteMetrics({
   metrics,
   pointCount,
   showPointCount = false,
+  walkingSpeedMph,
+  showWalkingSpeed = false,
   className,
 }: RouteMetricsProps) {
   const items = [
@@ -25,6 +29,13 @@ export function RouteMetrics({
       value: formatDurationMinutes(metrics.estimatedMinutes),
     },
   ];
+
+  if (showWalkingSpeed && walkingSpeedMph !== undefined) {
+    items.push({
+      label: "Walking Speed",
+      value: `${walkingSpeedMph.toFixed(1)} mph`,
+    });
+  }
 
   if (metrics.elevationGainMeters !== undefined) {
     items.push({

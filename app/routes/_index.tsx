@@ -3,10 +3,11 @@ import { useQuery } from "convex/react";
 import { Link, useLoaderData } from "react-router";
 import type { Route } from "./+types/_index";
 import { RouteList } from "~/components/RouteList";
+import { WalkingSpeedControl } from "~/components/WalkingSpeedControl";
 import type { RouteListItem } from "~/types/routes";
 import { api } from "../../convex/_generated/api";
 import { Button } from "~/components/ui/button";
-import { Card, CardContent } from "~/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -53,6 +54,17 @@ export default function Dashboard() {
           <Link to="/create">
             <Button size="lg">Create Route</Button>
           </Link>
+        </div>
+
+        <div className="mb-8">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Settings</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <WalkingSpeedControl />
+            </CardContent>
+          </Card>
         </div>
 
         {!hasRoutes ? (

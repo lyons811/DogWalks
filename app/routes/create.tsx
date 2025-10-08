@@ -13,6 +13,7 @@ import {
 import { RouteMetrics } from "~/components/RouteMetrics";
 import { calculateRouteMetrics } from "~/lib/route-calculations";
 import { getElevationMeters, preloadElevationModel } from "~/lib/elevation";
+import { useWalkingSpeed } from "~/lib/walking-speed";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 
@@ -32,6 +33,7 @@ export default function CreateRoute() {
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const isMountedRef = useRef(true);
+  const [walkingSpeedMph] = useWalkingSpeed();
 
   const createRouteMutation = useMutation(api.routes.createRoute);
   const navigate = useNavigate();
@@ -48,7 +50,7 @@ export default function CreateRoute() {
     };
   }, []);
 
-  const metrics = useMemo(() => calculateRouteMetrics(points), [points]);
+  const metrics = useMemo(() => calculateRouteMetrics(points, { walkingSpeedMph }), [points, walkingSpeedMph]);
   const pointCount = points.length;
   const hasRoute = pointCount > 0;
   const canSave = pointCount >= 2 && formValues.name.trim().length > 0 && !isSaving;
@@ -161,7 +163,9 @@ export default function CreateRoute() {
       const pointsWithElevation = await ensurePointElevations(points);
       setPoints(pointsWithElevation);
 
-      const metricsForSave = calculateRouteMetrics(pointsWithElevation);
+      const metricsForSave = calculateRouteMetrics(pointsWithElevation, {
+        walkingSpeedMph,
+      });
 
       const serializedPoints = pointsWithElevation.map((point) => {
         const { elevation, ...rest } = point;
@@ -193,13 +197,10 @@ export default function CreateRoute() {
     createRouteMutation,
     formValues.name,
     formValues.notes,
-    metrics.distanceMeters,
-    metrics.elevationGainMeters,
-    metrics.elevationLossMeters,
-    metrics.estimatedMinutes,
     navigate,
     pointCount,
     points,
+    walkingSpeedMph,
   ]);
 
   return (
@@ -264,6 +265,8 @@ export default function CreateRoute() {
                     metrics={metrics}
                     pointCount={pointCount}
                     showPointCount
+                    walkingSpeedMph={walkingSpeedMph}
+                    showWalkingSpeed
                   />
                   <p className="mt-3 text-xs text-muted-foreground">
                     Metrics update automatically as you draw.

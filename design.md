@@ -389,30 +389,42 @@ export default defineSchema({
 
 ---
 
-### Phase 6: Edit, Delete & Polish
+### Phase 6: Edit, Delete & Polish ✅ COMPLETED
 **Goal:** Full CRUD operations and UI refinement
 
 **Tasks:**
-- Add edit mode to route detail page
-- Enable point editing on detail page map
-- Implement `updateRoute` mutation in Convex
-- Add save changes button (only in edit mode)
-- Implement `deleteRoute` mutation in Convex
-- Add delete button with confirmation modal
-- Add walking speed configuration (localStorage or settings)
-- Polish UI/UX (transitions, loading states, error handling)
-- Add timestamps display (created date)
-- Implement route sorting on dashboard (newest first)
-- Optimize performance (memoization, lazy loading)
-- Add helpful tooltips and instructions
+- [x] Add edit mode to route detail page
+- [x] Enable point editing on detail page map
+- [x] Implement `updateRoute` mutation in Convex
+- [x] Add save changes button (only in edit mode)
+- [x] Implement `deleteRoute` mutation in Convex
+- [x] Add delete button with confirmation modal
+- [x] Add walking speed configuration (localStorage or settings)
+- [x] Polish UI/UX (transitions, loading states, error handling)
+- [x] Add timestamps display (created date)
+- [x] Implement route sorting on dashboard (newest first)
+- [x] Optimize performance (memoization, lazy loading)
+- [x] Add helpful tooltips and instructions
 
 **Deliverables:**
-- Can edit existing routes
-- Can delete routes with confirmation
-- Walking speed configurable
-- Clean, polished UI
-- All features working smoothly
-- Error states handled gracefully
+- [x] Can edit existing routes
+- [x] Can delete routes with confirmation
+- [x] Walking speed configurable
+- [x] Clean, polished UI
+- [x] All features working smoothly
+- [x] Error states handled gracefully
+
+**Completion Notes:**
+- Implemented `updateRoute` and `deleteRoute` mutations with full validation in `convex/routes.ts`.
+- Created `app/lib/walking-speed.ts` with localStorage-backed `useWalkingSpeed()` hook (range: 0.5-6.0 mph, default 3.0 mph).
+- Added `WalkingSpeedControl` component with slider and number input to dashboard settings card.
+- Built full edit mode on route detail page with toggle between view/edit, live metrics preview, dirty state tracking, and elevation enrichment.
+- Implemented delete flow with confirmation dialog using shadcn/ui `dialog` component, with proper z-index above Leaflet maps.
+- Fixed React hooks violation by moving route null check after all hooks to prevent "Rendered fewer hooks than expected" error.
+- Integrated walking speed into metrics calculations across create and detail pages, with reactive recalculation.
+- Added comprehensive error states: inline error banners, loading states during save/delete, user-friendly error messages.
+- Dashboard already had sorting (newest first via `createdAt` index) and timestamps (created/updated dates) from previous phases.
+- All TypeScript and ESLint validations pass.
 
 ---
 
